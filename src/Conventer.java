@@ -14,6 +14,13 @@ import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.JTextPane;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.awt.event.ActionEvent;
 
 public class Conventer {
@@ -107,7 +114,11 @@ public class Conventer {
 		JButton btnConvert = new JButton("Convert");
 		btnConvert.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				ConvertControl.runConvertCharset(targetCharset, suffixs, srcFolder);
+				String srcFolder = textFolder.getText();
+				String str = textExt.getText();
+				Charset targetCharset = Charset.forName(textField_charset.getText());
+				List<String> suffixs = Arrays.asList(textExt.getText().split(","));
+				ConvertControl.runConvertCharset(targetCharset, suffixs, new File(srcFolder));
 			}
 		});
 		frame.getContentPane().add(btnConvert, "cell 1 3");

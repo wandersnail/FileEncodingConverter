@@ -18,12 +18,29 @@ import info.monitorenter.cpdetector.io.UnicodeDetector;
 
 public class ConvertControl {
 	
-	private static Charset targetCharset;
-    private static List<String> suffixs = new ArrayList<String>();
+	private Charset targetCharset;
+    private List<String> suffixs;
+    private File srcFloder;
+    private File dstFolder;
 
-	public static void runConvertCharset(Charset targetCharset, List<String> suffixs, File srcFolder) {
-		ConvertControl.targetCharset = targetCharset;
-		ConvertControl.suffixs = suffixs;
+	public void setTargetCharset(Charset targetCharset) {
+		this.targetCharset = targetCharset;
+	}
+
+	public void setSuffixs(List<String> suffixs) {
+		this.suffixs = suffixs;
+	}
+
+	public void setSrcFloder(File srcFloder) {
+		this.srcFloder = srcFloder;
+	}
+
+	public void setDstFolder(File dstFolder) {
+		this.dstFolder = dstFolder;
+	}
+
+	public void runConvertCharset() {
+		
 		CodepageDetectorProxy detector = CodepageDetectorProxy.getInstance();
         detector.add(new ParsingDetector(false));
         detector.add(JChardetFacade.getInstance());
@@ -32,14 +49,14 @@ public class ConvertControl {
         //UnicodeDetector用于Unicode家族编码的测定  
         detector.add(UnicodeDetector.getInstance());
         try {
-			convertToUtf8(srcFolder, detector);
+			convertToUtf8(srcFloder, detector);
 		} catch (Throwable e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-	private static void convertToUtf8(File file, CodepageDetectorProxy detector) throws Throwable {
+	private void convertToUtf8(File file, CodepageDetectorProxy detector) throws Throwable {
         if (file.isDirectory()) {
             File[] files = file.listFiles();
             if (files != null) {
@@ -72,8 +89,9 @@ public class ConvertControl {
                 System.out.println(String.format(Locale.CHINA, "%s -> %s, 开始转码。\t文件：%s", charset.name(), targetCharset.name(), file.getAbsolutePath()));
                 try {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), charset));
-                    File outFileTemp = new File(file.getParent(), file.getName() + "tmp");
-                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFileTemp), targetCharset));
+                    String relatePath = file.getPath().substring(srcFloder.getPath().length());
+                    File dstFile = new File(dstFolder, relatePath);
+                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(dstFile), targetCharset));
                     String line;
                     boolean first = true;
                     while ((line = reader.readLine()) != null) {
@@ -85,8 +103,6 @@ public class ConvertControl {
                     }
                     reader.close();
                     writer.close();
-                    file.delete();
-                    outFileTemp.renameTo(file);
                 } catch (Throwable t) {
                     t.printStackTrace();
                 }
